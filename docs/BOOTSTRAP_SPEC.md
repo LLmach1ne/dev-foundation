@@ -32,7 +32,7 @@ Não há campos opcionais na primeira versão do contrato. Um campo opcional fut
 
 ### 2.2 Exemplo estrutural
 
-O exemplo a seguir é estruturalmente completo, mas não é executável enquanto não existir um profile tecnológico oficial na Foundation. Ele não representa um manifesto válido para geração nesta fase.
+O exemplo a seguir é estruturalmente completo e usa o profile tecnológico oficial `dotnet-web`. Ele ilustra uma referência de profile existente, mas não torna esse profile obrigatório para outros projetos.
 
 ```json
 {
@@ -41,12 +41,12 @@ O exemplo a seguir é estruturalmente completo, mas não é executável enquanto
   "project_slug": "portal-atendimento",
   "description": "Centraliza solicitações e acompanhamento de atendimento.",
   "foundation_version": "0.1.0",
-  "profile": "<profile-existente-na-foundation>",
+  "profile": "dotnet-web",
   "governance_level": "standard"
 }
 ```
 
-O valor de `profile` no exemplo é intencionalmente genérico: antes da geração ele deve ser substituído pelo identificador de um profile que exista e seja compatível com a Foundation selecionada. A regra de produção permanece inalterada: um manifesto real que referencie profile inexistente é inválido.
+O valor de `profile` no exemplo corresponde a um profile oficial. Em qualquer manifesto real, o identificador continua devendo referir um profile que exista e seja compatível com a `foundation_version` selecionada; um profile inexistente ou incompatível torna o manifesto inválido.
 
 ### 2.3 Regras gerais de validação
 
@@ -70,13 +70,13 @@ Cada projeto gerado deve receber `FOUNDATION.lock` na raiz do projeto. Ele regis
 
 Exemplo estrutural do formato inicial:
 
-Enquanto não existir um profile tecnológico oficial na Foundation, este exemplo é apenas estrutural e não representa um `FOUNDATION.lock` que possa ser gerado por uma execução válida.
+Este exemplo usa o profile tecnológico oficial `dotnet-web` e ilustra o formato de um `FOUNDATION.lock` correspondente. Outros projetos devem registrar o profile efetivamente aplicado.
 
 ```json
 {
   "schema_version": "1.0",
   "foundation_version": "0.1.0",
-  "profile": "<profile-existente-na-foundation>",
+  "profile": "dotnet-web",
   "governance_level": "standard",
   "created_at": "2026-09-21T14:30:00Z"
 }
@@ -185,11 +185,11 @@ A implementação futura será aceitável quando puder demonstrar que:
 - inicializa Git quando aplicável e reporta quando não for possível;
 - executa e reporta as verificações aplicáveis;
 - em falha, retorna categoria clara e informa com precisão qualquer estado parcial.
-- nesta fase, não trata os exemplos estruturais deste documento como instâncias executáveis de aceite; a demonstração com manifesto e lock semanticamente válidos depende de profile oficial e é obrigatória antes da implementação ou homologação do `New-Project`.
+- trata os exemplos estruturais deste documento como referências que usam um profile oficial; sua presença não substitui a validação de manifesto, Foundation, profile e `FOUNDATION.lock` exigida antes da implementação ou homologação do `New-Project`.
 
 ## 11. Exemplos estruturais completos
 
-O par abaixo contém todos os campos do contrato, mas é estrutural e não executável enquanto não existir profile tecnológico oficial na Foundation. O valor de `profile` deve ser substituído pelo identificador de um profile realmente existente e compatível antes de qualquer geração; caso contrário, o manifesto real é inválido.
+O par abaixo contém todos os campos do contrato e usa o profile tecnológico oficial `dotnet-web`. Ele é ilustrativo e não restringe outros projetos a esse profile. Em qualquer geração, o profile selecionado deve existir e ser compatível com a Foundation; caso contrário, o manifesto real é inválido.
 
 Manifesto:
 
@@ -200,7 +200,7 @@ Manifesto:
   "project_slug": "catalogo-operacional",
   "description": "Organiza a consulta de itens e procedimentos operacionais.",
   "foundation_version": "0.1.0",
-  "profile": "<profile-existente-na-foundation>",
+  "profile": "dotnet-web",
   "governance_level": "light"
 }
 ```
@@ -211,7 +211,7 @@ Manifesto:
 {
   "schema_version": "1.0",
   "foundation_version": "0.1.0",
-  "profile": "<profile-existente-na-foundation>",
+  "profile": "dotnet-web",
   "governance_level": "light",
   "created_at": "2026-09-21T14:30:00Z"
 }
@@ -219,4 +219,4 @@ Manifesto:
 
 ## 12. Evolução dos exemplos
 
-Assim que o primeiro profile tecnológico oficial existir, os exemplos desta especificação devem ser atualizados para usar seu identificador real antes da implementação ou homologação do `New-Project`.
+Os exemplos desta especificação usam `dotnet-web`, o primeiro profile tecnológico oficial. Eles podem ser atualizados para outros profiles oficiais quando isso for útil para ilustrar o contrato, sem tornar qualquer profile obrigatório para todos os projetos.
