@@ -121,11 +121,17 @@ A composição é aplicada na ordem Base → Profile → Governança. Em caso de
 
 ## 6. Placeholders
 
-Templates podem conter placeholders no formato `{{IDENTIFICADOR}}`, com identificadores em maiúsculas, números e `_`. Exemplos iniciais:
+Templates podem conter placeholders de conteúdo no formato `{{IDENTIFICADOR}}`, com identificadores em maiúsculas, números e `_`. Os placeholders oficialmente permitidos nesta versão e seus valores de origem são:
 
-- `{{PROJECT_NAME}}`
-- `{{PROJECT_SLUG}}`
-- `{{PROJECT_DESCRIPTION}}`
+| Placeholder | Campo de origem | Uso atual |
+| --- | --- | --- |
+| `{{PROJECT_NAME}}` | `project_name` | Nome legível do projeto em conteúdo de template. |
+| `{{PROJECT_DESCRIPTION}}` | `description` | Descrição inicial do projeto em conteúdo de template. |
+| `{{PROJECT_SLUG}}` | `project_slug` | Disponível como placeholder permitido; o uso atual de `project_slug` é a identificação estável e o diretório do projeto. Não é necessário inseri-lo artificialmente em documentos. |
+
+Nesta versão, a substituição aplica-se somente ao conteúdo dos arquivos de template. Não há substituição nem renomeação de nomes de arquivos ou diretórios.
+
+Marcadores editoriais entre colchetes, como `[DESCREVA_O_PROBLEMA]`, não são placeholders do bootstrap e devem permanecer no projeto gerado para preenchimento humano posterior.
 
 Somente placeholders previamente permitidos pela Foundation podem ser substituídos. O bootstrap futuro deve detectar placeholders desconhecidos ou não resolvidos e tratá-los como falha de geração ou verificação, conforme a etapa aplicável. Esta especificação não implementa o mecanismo de substituição.
 
