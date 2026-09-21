@@ -1,0 +1,31 @@
+﻿# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDE local state
+.vs/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.secrets.json
+
+# PowerShell / tooling artifacts
+*.clixml
+
+# Test / cache artifacts
+.coverage/
+coverage/
+.cache/
+tmp/
+temp/
