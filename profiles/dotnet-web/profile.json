@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "id": "dotnet-web",
+  "name": "Base mínima neutra para aplicações web .NET",
+  "description": "Profile mínimo e neutro para aplicações web .NET com ASP.NET Core."
+}
