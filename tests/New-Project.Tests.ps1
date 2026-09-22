@@ -120,9 +120,18 @@ Describe 'New-Project bootstrap' {
     It 'generates a valid standard dotnet-web project with its contract artifacts' {
         $destination = New-TestDestination
         $manifestPath = Join-Path $script:TestRoot 'manifest.json'
+        $isolatedGitConfigPath = Join-Path $script:TestRoot 'gitconfig'
         Write-TestManifest -Path $manifestPath -ProjectSlug 'valid-standard'
+        [System.IO.File]::WriteAllText($isolatedGitConfigPath, "[init]`n`tdefaultBranch = master`n", $script:Utf8NoBom)
 
-        $result = Invoke-NewProject -Generator $script:GeneratorPath -Manifest $manifestPath -Destination $destination
+        $previousGitConfigGlobal = [System.Environment]::GetEnvironmentVariable('GIT_CONFIG_GLOBAL', 'Process')
+        try {
+            [System.Environment]::SetEnvironmentVariable('GIT_CONFIG_GLOBAL', $isolatedGitConfigPath, 'Process')
+            $result = Invoke-NewProject -Generator $script:GeneratorPath -Manifest $manifestPath -Destination $destination
+        }
+        finally {
+            [System.Environment]::SetEnvironmentVariable('GIT_CONFIG_GLOBAL', $previousGitConfigGlobal, 'Process')
+        }
         $projectPath = Join-Path $destination 'valid-standard'
 
         $result.ExitCode | Should Be 0
@@ -150,6 +159,8 @@ Describe 'New-Project bootstrap' {
         $lock.governance_level | Should Be 'standard'
         $lock.created_at | Should Match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{7}Z$'
         Test-Path -LiteralPath (Join-Path $projectPath '.git') -PathType Container | Should Be $true
+        (& git -C $projectPath symbolic-ref --quiet --short HEAD) | Should Be 'main'
+        $LASTEXITCODE | Should Be 0
         & git -C $projectPath status --short | Out-Null
         $LASTEXITCODE | Should Be 0
     }

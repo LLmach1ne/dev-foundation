@@ -390,7 +390,7 @@ try {
     Write-Utf8NoBomFile -Path $lockPath -Content (New-FoundationLockContent -FoundationVersion $foundationVersion -Profile $manifestValues.profile -GovernanceLevel $manifestValues.governance_level)
 
     $stage = 'git_init'
-    & $gitCommand.Source init $finalPath
+    & $gitCommand.Source init --initial-branch main $finalPath
     if ($LASTEXITCODE -ne 0) { Fail "git init failed with exit code $LASTEXITCODE." }
 
     $stage = 'verification'
