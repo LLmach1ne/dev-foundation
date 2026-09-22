@@ -24,7 +24,7 @@ O arquivo `project.bootstrap.json` representa a solicitação de criação de um
 | `project_name` | Sim | string não vazia, com texto significativo | Nome legível do projeto. Não pode conter somente espaços. |
 | `project_slug` | Sim | `^[a-z0-9]+(?:-[a-z0-9]+)*$` | Identificador estável usado em caminhos e placeholders. Deve ser único no destino escolhido e não pode ser `.` ou `..`. |
 | `description` | Sim | string não vazia | Descrição breve do problema ou propósito inicial do projeto. Não pode conter somente espaços. |
-| `foundation_version` | Sim | string de versão não vazia | Versão exata da Foundation a ser usada. Deve estar disponível e ser reconhecida pela instalação da Foundation selecionada. |
+| `foundation_version` | Sim | string de versão não vazia | Versão exata da Foundation a ser usada. Nesta Foundation, deve ser exatamente igual ao conteúdo de `VERSION`. |
 | `profile` | Sim | string de identificador não vazia | Identificador do profile tecnológico. Deve corresponder a um profile existente e compatível com a `foundation_version` solicitada. Esta especificação não fixa quais profiles existem. |
 | `governance_level` | Sim | enum | Nível de controles aplicáveis: `light`, `standard` ou `critical`. |
 
@@ -40,7 +40,7 @@ O exemplo a seguir é estruturalmente completo e usa o profile tecnológico ofic
   "project_name": "Portal de Atendimento",
   "project_slug": "portal-atendimento",
   "description": "Centraliza solicitações e acompanhamento de atendimento.",
-  "foundation_version": "0.1.0",
+  "foundation_version": "0.1.0-dev",
   "profile": "dotnet-web",
   "governance_level": "standard"
 }
@@ -53,7 +53,8 @@ O valor de `profile` no exemplo corresponde a um profile oficial. Em qualquer ma
 - O documento deve ser JSON válido e conter exatamente os campos definidos para a versão do esquema; campos desconhecidos devem falhar até serem especificados em versão futura.
 - Os valores de texto devem ser interpretados como dados, nunca como comandos, caminhos arbitrários ou conteúdo a executar.
 - `project_slug` não pode ser transformado silenciosamente pelo bootstrap. Se não obedecer ao formato, a solicitação falha.
-- `foundation_version`, `profile` e `governance_level` devem ser resolvidos e validados antes da criação do destino.
+- `foundation_version`, `profile` e `governance_level` devem ser resolvidos e validados antes da criação do destino. Nesta Foundation, `foundation_version` deve ser igual, caractere a caractere, ao conteúdo de `VERSION`; qualquer outro valor torna o manifesto inválido.
+- `governance_level` deve ser exatamente `light`, `standard` ou `critical`. O diretório `governance/<governance_level>/template/` correspondente deve existir antes da criação do destino.
 - O manifesto não pode conter segredos, tokens, senhas, chaves privadas ou credenciais.
 
 ## 3. Arquivo `FOUNDATION.lock`
@@ -75,7 +76,7 @@ Este exemplo usa o profile tecnológico oficial `dotnet-web` e ilustra o formato
 ```json
 {
   "schema_version": "1.0",
-  "foundation_version": "0.1.0",
+  "foundation_version": "0.1.0-dev",
   "profile": "dotnet-web",
   "governance_level": "standard",
   "created_at": "2026-09-21T14:30:00Z"
@@ -83,6 +84,8 @@ Este exemplo usa o profile tecnológico oficial `dotnet-web` e ilustra o formato
 ```
 
 `FOUNDATION.lock` registra a origem metodológica do projeto. Ele não é configuração mutável de produto, não recebe segredos e não deve ser alterado para simular uma geração diferente. Atualizações deliberadas da Foundation em um projeto existente exigem processo rastreável próprio.
+
+O campo `foundation_version` do lock deve reproduzir exatamente o valor validado no manifesto e, nesta Foundation, portanto o conteúdo de `VERSION`.
 
 ## 4. Processo conceitual de geração
 
@@ -94,7 +97,7 @@ O bootstrap deve executar conceitualmente a seguinte sequência:
 4. validar destino;
 5. aplicar `templates/base`;
 6. aplicar profile tecnológico;
-7. aplicar regras do nível de governança;
+7. aplicar o overlay concreto `governance/<governance_level>/template/`;
 8. substituir placeholders permitidos;
 9. gerar `FOUNDATION.lock`;
 10. inicializar Git, quando aplicável;
@@ -115,7 +118,9 @@ O Profile contém conteúdo específico de uma tecnologia e suas dependências j
 
 ### Governança
 
-A Governança adiciona controles proporcionais ao risco. `light` mantém o mínimo recuperável; `standard` exige a disciplina normal de sistemas com continuidade; `critical` adiciona controles, evidências, revisões e quality gates compatíveis com maior impacto ou risco.
+A Governança adiciona controles proporcionais ao risco. `light` mantém o mínimo recuperável; `standard` exige a disciplina normal de sistemas com continuidade; `critical` adiciona controles, evidências, revisões e quality gates compatíveis com maior impacto ou risco. O padrão de obrigações de cada nível é definido em `docs/GOVERNANCE_STANDARD.md`.
+
+Nesta Foundation, a Governança é materializada exclusivamente pelo overlay concreto `governance/<governance_level>/template/`, aplicado depois de Base e Profile. O bootstrap deve aceitar somente os níveis `light`, `standard` e `critical`, exigir a existência do overlay correspondente, enumerar seus arquivos em ordem determinística e detectar todas as colisões com Base, Profile ou o destino antes de escrever qualquer arquivo. Sem uma regra explícita de composição para uma colisão, a geração deve falhar; nesta etapa não há sobrescrita nem merge automático de arquivos.
 
 A composição é aplicada na ordem Base → Profile → Governança. Em caso de conflito, garantias universais da Base prevalecem; a Governança pode acrescentar ou tornar controles mais rigorosos. Um Profile pode complementar pontos de extensão definidos pela Base, mas não pode remover, enfraquecer ou substituir silenciosamente garantias da Base. Conflitos não previstos ou remoções necessárias devem falhar ou ser objeto de decisão explícita e rastreável.
 
@@ -175,8 +180,10 @@ O resultado deve informar sucesso ou falha, a categoria quando houver falha, a e
 A implementação futura será aceitável quando puder demonstrar que:
 
 - aceita um manifesto válido e rejeita manifestos inválidos antes de escrever no destino;
-- rejeita Foundation e Profile inexistentes ou incompatíveis;
-- cria a Base, aplica o Profile e adiciona as regras de Governança na ordem definida;
+- rejeita Foundation e Profile inexistentes ou incompatíveis, inclusive `foundation_version` diferente do conteúdo de `VERSION` nesta Foundation;
+- aceita somente `light`, `standard` ou `critical`, exige o overlay `governance/<governance_level>/template/` correspondente e falha se ele não existir;
+- cria a Base, aplica o Profile e aplica o overlay de Governança na ordem definida;
+- detecta colisões de composição antes de escrever e não sobrescreve nem faz merge automático sem regra explícita;
 - preserva garantias da Base diante da aplicação de Profile e Governança;
 - substitui somente placeholders permitidos e detecta placeholders não resolvidos;
 - gera `FOUNDATION.lock` com os campos obrigatórios e os valores efetivamente aplicados;
@@ -199,7 +206,7 @@ Manifesto:
   "project_name": "Catálogo Operacional",
   "project_slug": "catalogo-operacional",
   "description": "Organiza a consulta de itens e procedimentos operacionais.",
-  "foundation_version": "0.1.0",
+  "foundation_version": "0.1.0-dev",
   "profile": "dotnet-web",
   "governance_level": "light"
 }
@@ -210,7 +217,7 @@ Manifesto:
 ```json
 {
   "schema_version": "1.0",
-  "foundation_version": "0.1.0",
+  "foundation_version": "0.1.0-dev",
   "profile": "dotnet-web",
   "governance_level": "light",
   "created_at": "2026-09-21T14:30:00Z"
