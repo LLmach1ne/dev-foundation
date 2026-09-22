@@ -1,7 +1,7 @@
 # DEV FOUNDATION — Bootstrap Specification
 
 **Versão do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Foundation Core
 
 ## 1. Objetivo
@@ -10,7 +10,7 @@ Este documento define o contrato conceitual para criar um novo projeto com a DEV
 
 **Foundation Core + profile tecnológico existente + nível de governança + dados do projeto**
 
-Esta especificação define o contrato do futuro `New-Project`; ela não define sua implementação, comandos, scripts ou profiles tecnológicos.
+Esta especificação define o contrato implementado por `tools/New-Project.ps1` na v1. Ela descreve as garantias verificáveis do bootstrap, sem substituir os detalhes operacionais documentados no script e no padrão de ambiente.
 
 ## 2. Manifesto `project.bootstrap.json`
 
@@ -40,7 +40,7 @@ O exemplo a seguir é estruturalmente completo e usa o profile tecnológico ofic
   "project_name": "Portal de Atendimento",
   "project_slug": "portal-atendimento",
   "description": "Centraliza solicitações e acompanhamento de atendimento.",
-  "foundation_version": "0.1.0-dev",
+  "foundation_version": "1.0.0",
   "profile": "dotnet-web",
   "governance_level": "standard"
 }
@@ -76,7 +76,7 @@ Este exemplo usa o profile tecnológico oficial `dotnet-web` e ilustra o formato
 ```json
 {
   "schema_version": "1.0",
-  "foundation_version": "0.1.0-dev",
+  "foundation_version": "1.0.0",
   "profile": "dotnet-web",
   "governance_level": "standard",
   "created_at": "2026-09-21T14:30:00Z"
@@ -104,7 +104,7 @@ O bootstrap deve executar conceitualmente a seguinte sequência:
 11. executar verificações;
 12. reportar resultado.
 
-O projeto deve ser tratado como repositório Git quando essa for a forma aplicável de gestão do produto e Git estiver disponível no ambiente. A definição dos comandos e de eventuais exceções operacionais pertence à futura implementação, não a este contrato.
+O bootstrap inicializa o projeto como repositório Git em `main` quando o Git exigido pelo ambiente está disponível. Ele não configura identidade, credenciais ou remoto; os requisitos e limites operacionais estão em `ENVIRONMENT_STANDARD.md`.
 
 ## 5. Composição e precedência
 
@@ -138,7 +138,7 @@ Nesta versão, a substituição aplica-se somente ao conteúdo dos arquivos de t
 
 Marcadores editoriais entre colchetes, como `[DESCREVA_O_PROBLEMA]`, não são placeholders do bootstrap e devem permanecer no projeto gerado para preenchimento humano posterior.
 
-Somente placeholders previamente permitidos pela Foundation podem ser substituídos. O bootstrap futuro deve detectar placeholders desconhecidos ou não resolvidos e tratá-los como falha de geração ou verificação, conforme a etapa aplicável. Esta especificação não implementa o mecanismo de substituição.
+Somente placeholders previamente permitidos pela Foundation podem ser substituídos. O bootstrap implementado detecta placeholders desconhecidos ou não resolvidos e os trata como falha de geração ou verificação, conforme a etapa aplicável.
 
 ## 7. Segurança e integridade
 
@@ -161,7 +161,7 @@ O bootstrap não deve depender de estado implícito da máquina, ordem não dete
 
 ## 9. Erros e resultado
 
-Os códigos numéricos de saída permanecem em aberto. A implementação futura deve distinguir, ao menos, as seguintes categorias conceituais:
+O comando retorna `0` em sucesso e `1` em falha. A mensagem de falha informa categoria, etapa alcançada e estado parcial; as categorias conceituais são, ao menos:
 
 | Categoria | Quando ocorre |
 | --- | --- |
@@ -175,9 +175,9 @@ Os códigos numéricos de saída permanecem em aberto. A implementação futura 
 
 O resultado deve informar sucesso ou falha, a categoria quando houver falha, a etapa alcançada e se houve estado parcial.
 
-## 10. Critérios de aceite do futuro `New-Project`
+## 10. Critérios de aceite do `New-Project`
 
-A implementação futura será aceitável quando puder demonstrar que:
+A implementação da v1 deve demonstrar que:
 
 - aceita um manifesto válido e rejeita manifestos inválidos antes de escrever no destino;
 - rejeita Foundation e Profile inexistentes ou incompatíveis, inclusive `foundation_version` diferente do conteúdo de `VERSION` nesta Foundation;
@@ -192,7 +192,7 @@ A implementação futura será aceitável quando puder demonstrar que:
 - inicializa Git quando aplicável e reporta quando não for possível;
 - executa e reporta as verificações aplicáveis;
 - em falha, retorna categoria clara e informa com precisão qualquer estado parcial.
-- trata os exemplos estruturais deste documento como referências que usam um profile oficial; sua presença não substitui a validação de manifesto, Foundation, profile e `FOUNDATION.lock` exigida antes da implementação ou homologação do `New-Project`.
+- trata os exemplos estruturais deste documento como referências que usam um profile oficial; sua presença não substitui a validação de manifesto, Foundation, profile e `FOUNDATION.lock` exigida antes da geração ou homologação do `New-Project`.
 
 ## 11. Exemplos estruturais completos
 
@@ -206,7 +206,7 @@ Manifesto:
   "project_name": "Catálogo Operacional",
   "project_slug": "catalogo-operacional",
   "description": "Organiza a consulta de itens e procedimentos operacionais.",
-  "foundation_version": "0.1.0-dev",
+  "foundation_version": "1.0.0",
   "profile": "dotnet-web",
   "governance_level": "light"
 }
@@ -217,7 +217,7 @@ Manifesto:
 ```json
 {
   "schema_version": "1.0",
-  "foundation_version": "0.1.0-dev",
+  "foundation_version": "1.0.0",
   "profile": "dotnet-web",
   "governance_level": "light",
   "created_at": "2026-09-21T14:30:00Z"

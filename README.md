@@ -16,9 +16,7 @@ Manter um processo de desenvolvimento que seja:
 
 ## Estado atual
 
-A Foundation está em construção.
-
-Versão de desenvolvimento: `0.1.0-dev`
+Release atual: `1.0.0`.
 
 ## Começo rápido em outro computador Windows
 
@@ -84,6 +82,8 @@ estão em [Environment Standard](docs/ENVIRONMENT_STANDARD.md).
 - `docs/` — metodologia e padrões
 - `global/` — configurações globais reutilizáveis
 - `templates/` — templates para novos projetos
+- `profiles/` — profiles tecnológicos oficiais
+- `governance/` — overlays de governança proporcionais ao risco
 - `tools/` — automações da Foundation
 - `tests/` — verificações da própria Foundation
 

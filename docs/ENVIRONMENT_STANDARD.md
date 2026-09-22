@@ -1,7 +1,7 @@
 # DEV FOUNDATION — Environment Standard
 
 **Versão do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Foundation
 
 ## 1. Objetivo
@@ -87,7 +87,25 @@ nunca deve ser aplicada automaticamente pela Foundation. `MachinePolicy` e
 `UserPolicy` corporativas devem ser respeitadas: não devem ser contornadas por
 scripts, instruções ou parâmetros alternativos.
 
-## 6. Profiles e .NET
+## 6. Verificação de ambiente
+
+`tools/Verify-Environment.ps1` é um diagnóstico estritamente read-only. Ele não instala, atualiza, configura ou corrige o ambiente, a política de execução, o Git ou o .NET.
+
+Execute os checks core:
+
+```powershell
+.\tools\Verify-Environment.ps1
+```
+
+Para validar também o profile oficial `dotnet-web`:
+
+```powershell
+.\tools\Verify-Environment.ps1 -Profile dotnet-web
+```
+
+Cada check é emitido como `PASS`, `WARN` ou `FAIL`, seguido por um `summary`. O processo retorna `0` quando não há `FAIL` e `1` quando há ao menos um `FAIL`. O verificador é uma evidência opcional de diagnóstico; ele não é requisito para executar `New-Project.ps1`.
+
+## 7. Profiles e .NET
 
 .NET não é requisito do core nem de `New-Project.ps1`; o gerador compõe o
 profile solicitado, mas não executa restore ou build.
@@ -111,7 +129,7 @@ dotnet build .\src\App\App.csproj --configuration Release --no-restore
 Não há regra genérica antecipada para profiles futuros; cada profile publicado
 deve documentar seus próprios pré-requisitos e verificações.
 
-## 7. VS Code e Codex
+## 8. VS Code e Codex
 
 VS Code e Codex fazem parte do fluxo de engenharia da metodologia, mas não
 são requisitos técnicos para `New-Project.ps1` funcionar. Instalação,
@@ -122,22 +140,25 @@ Configurações globais do Codex exigem revisão humana e seguem o
 [Codex Standard](CODEX_STANDARD.md); a Foundation não instala extensões nem
 altera configurações globais automaticamente.
 
-## 8. Testes da própria Foundation
+## 9. Testes da própria Foundation
 
-A suíte atual `tests/New-Project.Tests.ps1` foi exercitada em Windows
-PowerShell 5.1 com Pester `3.4.0`. Pester não é pré-requisito para pessoas que
-apenas usam o gerador.
+A suíte atual `tests/New-Project.Tests.ps1` e
+`tests/Verify-Environment.Tests.ps1` foram exercitadas em Windows PowerShell 5.1
+com Pester `3.4.0`. Pester não é pré-requisito para pessoas que apenas usam o
+gerador.
 
-Para mantenedores da Foundation, o comando oficial atual é:
+Para mantenedores da Foundation, os comandos oficiais atuais são:
 
 ```powershell
+Invoke-Pester -Script .\tests\Verify-Environment.Tests.ps1
 Invoke-Pester -Script .\tests\New-Project.Tests.ps1
+Invoke-Pester -Script .\tests
 ```
 
-Execute-o em uma sessão que possa executar scripts conforme a seção 5. A suíte
+Execute-os em uma sessão que possa executar scripts conforme a seção 5. A suíte
 usa diretórios temporários descartáveis para seus fixtures.
 
-## 9. Segurança e privilégios
+## 10. Segurança e privilégios
 
 O setup deve preferir o escopo da sessão ou do usuário. Nenhuma instrução da
 Foundation exige privilégios administrativos sem necessidade comprovada.
@@ -146,7 +167,7 @@ A Foundation não altera silenciosamente `PATH`, Execution Policy, configuraçã
 Git, configuração Codex ou credenciais. Segredos, tokens, chaves privadas e
 dados de autenticação não pertencem ao repositório.
 
-## 10. Reconstrução de uma máquina Windows
+## 11. Reconstrução de uma máquina Windows
 
 1. Instale manualmente Windows PowerShell/Git e as ferramentas humanas que o
    fluxo exigir; instale o SDK somente se for usar `dotnet-web`.
@@ -173,9 +194,9 @@ dados de autenticação não pertencem ao repositório.
 
 7. Valide o projeto gerado. Confirme a existência de `FOUNDATION.lock` e
    `.git`, execute `git -C <diretorio-do-projeto> status --short` e, para
-   `dotnet-web`, faça restore e build conforme a seção 6.
+   `dotnet-web`, faça restore e build conforme a seção 7.
 
-## 11. Estrutura local recomendada
+## 12. Estrutura local recomendada
 
 Em Windows, `C:\Dev\` é uma convenção recomendada, não uma dependência do
 gerador:

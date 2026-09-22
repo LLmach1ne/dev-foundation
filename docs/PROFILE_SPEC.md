@@ -1,7 +1,7 @@
 # DEV FOUNDATION — Profile Specification
 
 **Versão do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Profiles tecnológicos da Foundation
 
 ## 1. Objetivo
@@ -11,8 +11,9 @@ bootstrap da DEV FOUNDATION.
 
 Um profile representa conteúdo e regras específicos de uma stack tecnológica.
 Ele pode atender, por exemplo, a categorias de aplicações web, APIs ou
-ferramentas CLI. Essas categorias são apenas conceituais: este documento não
-declara, escolhe nem cria profiles oficiais.
+ferramentas CLI. Essas categorias são conceituais; profiles oficiais são
+materializados e publicados separadamente na Foundation. Na v1, `dotnet-web`
+é o primeiro profile oficial existente.
 
 Um projeto é composto por **Base + Profile + Governança + dados do produto**.
 O profile acrescenta somente o que é necessário para a tecnologia selecionada;
@@ -34,8 +35,7 @@ publicação é uma mudança incompatível da Foundation.
 
 ## 3. Estrutura física conceitual
 
-Um profile possui, no mínimo, a estrutura abaixo. Ela é um contrato para uma
-implementação futura; esta especificação não cria diretórios ou profiles.
+Todo profile oficial possui, no mínimo, a estrutura abaixo.
 
 ```text
 profiles/
@@ -146,13 +146,13 @@ As verificações de estrutura, existência, JSON, campos obrigatórios e coerê
 de identificador são diretamente automatizáveis. A detecção de caminhos
 absolutos e de padrões de secrets conhecidos também pode ser automatizada, mas
 é heurística e não prova a ausência de todo secret possível; casos suspeitos
-exigem revisão apropriada. Sua automação pertence à futura implementação do
-bootstrap.
+exigem revisão apropriada. Sua automação pode evoluir com o bootstrap sem
+alterar este contrato.
 
 ## 11. Critérios de aceite para profile oficial
 
-Um futuro profile pode ser considerado pronto para publicação na Foundation
-somente quando houver evidência verificável de que:
+Um profile candidato a publicação na Foundation só pode ser considerado pronto
+quando houver evidência verificável de que:
 
 - sua estrutura e metadados são válidos;
 - sua documentação explica o propósito, os pré-requisitos e a forma de

@@ -1,7 +1,7 @@
 ﻿# DEV FOUNDATION â€” Project Lifecycle
 
 **VersÃ£o do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Foundation
 
 ## 1. Objetivo

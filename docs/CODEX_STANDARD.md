@@ -1,7 +1,7 @@
 # DEV FOUNDATION — Codex Standard
 
 **Versão do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Foundation
 
 ## 1. Objetivo

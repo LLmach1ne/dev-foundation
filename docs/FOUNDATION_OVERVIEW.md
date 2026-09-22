@@ -1,9 +1,9 @@
 ﻿# DEV FOUNDATION â€” Overview
 
 **VersÃ£o do documento:** 0.1
-**Status:** Draft
+**Status:** Stable — v1.0.0
 **Escopo:** Foundation
-**Fonte oficial futura:** repositÃ³rio `dev-foundation`
+**Fonte técnica oficial:** repositório `dev-foundation`
 
 ## 1. PropÃ³sito
 
@@ -183,9 +183,12 @@ Inclui:
 
 ContÃªm convenÃ§Ãµes especÃ­ficas de stacks tecnolÃ³gicas.
 
-Exemplos futuros:
+Profile oficial atual:
 
 - `dotnet-web`;
+
+Exemplos de profiles que podem ser publicados no futuro quando houver necessidade concreta:
+
 - `python`;
 - `node-web`.
 
