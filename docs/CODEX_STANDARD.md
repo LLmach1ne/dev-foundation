@@ -8,6 +8,11 @@
 
 Este documento define como o Codex deve ser configurado e utilizado nos projetos desenvolvidos sob a DEV FOUNDATION.
 
+VS Code e Codex pertencem ao fluxo de engenharia da metodologia, mas não são
+requisitos técnicos para `New-Project.ps1` gerar um projeto. Instalação,
+autenticação e atualização dessas ferramentas são passos humanos; os requisitos
+do gerador e dos profiles estão em [Environment Standard](ENVIRONMENT_STANDARD.md).
+
 ## 2. Camadas de configuração
 
 A configuração do Codex é dividida em duas camadas principais.
@@ -27,6 +32,11 @@ A Foundation controla diretamente apenas as instruções globais reutilizáveis 
 A versão mestre dessas instruções fica em:
 
 `dev-foundation/global/codex/AGENTS.md`
+
+Para aplicar essas instruções em uma máquina nova, a pessoa responsável deve
+ler a versão versionada, comparar seu conteúdo com o `AGENTS.md` global já
+existente e decidir conscientemente se e como incorporá-lo. A Foundation não
+substitui nem mescla esse arquivo automaticamente.
 
 ### Projeto
 
@@ -61,6 +71,10 @@ Ele pode conter:
 - configurações específicas da máquina.
 
 Scripts da Foundation devem preservar esse arquivo, salvo quando uma alteração específica e explicitamente aprovada for necessária.
+
+Qualquer alteração global exige revisão humana prévia. Ela deve preservar
+preferências, integrações e estado local existentes, e nunca incluir
+credenciais, tokens ou arquivos de autenticação no repositório.
 
 ## 4. AGENTS.md global
 

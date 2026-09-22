@@ -1,348 +1,194 @@
-﻿# DEV FOUNDATION â€” Environment Standard
+# DEV FOUNDATION — Environment Standard
 
-**VersÃ£o do documento:** 0.1
+**Versão do documento:** 0.1
 **Status:** Draft
 **Escopo:** Foundation
 
 ## 1. Objetivo
 
-Este documento define como o ambiente de desenvolvimento deve ser organizado para permitir portabilidade, recuperaÃ§Ã£o e uso consistente entre diferentes computadores.
+Este documento materializa o contrato de ambiente para a Foundation v1: uma
+máquina Windows nova deve poder clonar, validar e usar a Foundation sem
+depender de conhecimento mantido apenas em outra máquina ou em conversas.
 
-A mÃ¡quina local deve ser tratada como uma estaÃ§Ã£o reconstruÃ­vel.
+A máquina local é uma estação reconstruível. Informações permanentes,
+configurações reutilizáveis e decisões devem permanecer nos repositórios
+apropriados; credenciais são fornecidas pelos canais apropriados e não entram
+na Foundation.
 
-InformaÃ§Ã£o essencial nÃ£o deve existir exclusivamente nela.
+## 2. Plataforma e evidência atual
 
-## 2. Modelo de ambiente
+A Foundation v1 usa Windows nativo. Windows PowerShell 5.1 é o baseline
+efetivamente exercitado e homologado para `New-Project.ps1` e para a suíte
+atual. Isso não declara incompatibilidade com versões de PowerShell não
+testadas.
 
-O ambiente possui quatro camadas:
+WSL e Docker não são requisitos da Foundation. Ferramentas adicionais só
+entram quando um profile ou projeto justificar sua necessidade.
 
-**ChatGPT â†’ Git remoto â†’ mÃ¡quina local â†’ VS Code/Codex**
+As evidências atualmente homologadas são:
 
-Cada camada possui responsabilidade prÃ³pria.
+- Windows nativo;
+- Windows PowerShell 5.1;
+- Git capaz de executar `git init --initial-branch main`;
+- .NET SDK `10.0.401` para o profile `dotnet-web`.
 
-### ChatGPT
+## 3. Requisitos por finalidade
 
-ResponsÃ¡vel por:
+| Finalidade | Requisitos | Não exige |
+| --- | --- | --- |
+| Gerar um projeto | Windows PowerShell, Git no `PATH`, manifesto válido, destino existente e gravável | .NET, VS Code e Codex, salvo se o profile escolhido os exigir posteriormente |
+| Usar `dotnet-web` | Requisitos do gerador e .NET SDK `10.0.401` | Banco, Docker, WSL ou dependências de produto |
+| Fluxo de engenharia | Ferramentas humanas escolhidas para editar, revisar, testar e trabalhar com agentes, como VS Code e Codex | Que `New-Project.ps1` dependa dessas ferramentas |
+| Manter/testar a Foundation | Windows PowerShell 5.1 e Pester `3.4.0`, além de Git | Pester para quem apenas gera projetos |
 
-- discussÃ£o;
-- discovery;
-- anÃ¡lise;
-- planejamento;
-- contexto de trabalho;
-- coordenaÃ§Ã£o metodolÃ³gica.
+## 4. Git
 
-### Git remoto
+`New-Project.ps1` requer que `git` esteja disponível no `PATH`. O Git usado
+deve aceitar o comando abaixo, pois o gerador cria o repositório com a branch
+inicial determinística `main`:
 
-ResponsÃ¡vel por:
+```powershell
+git --version
+git init --help
+```
 
-- fonte oficial versionada;
-- histÃ³rico;
-- colaboraÃ§Ã£o;
-- recuperaÃ§Ã£o;
-- distribuiÃ§Ã£o entre computadores.
+Não há versão mínima numérica declarada sem evidência adicional. A confirmação
+operacional é que `git init --initial-branch main <destino>` seja suportado.
 
-### MÃ¡quina local
+O bootstrap apenas inicializa o repositório. `user.name` e `user.email` não
+são necessários nessa etapa, mas serão necessários quando a pessoa criar o
+primeiro commit:
 
-ResponsÃ¡vel por:
+```powershell
+git config --get user.name
+git config --get user.email
+```
 
-- execuÃ§Ã£o;
-- ferramentas;
-- caches;
-- SDKs;
-- repositÃ³rios clonados;
-- recursos de desenvolvimento.
+Autenticação com GitHub ou outro remoto é um passo humano de setup da conta. O
+gerador não configura credenciais, remotos ou identidade Git.
 
-### VS Code/Codex
+## 5. PowerShell e Execution Policy
 
-ResponsÃ¡veis pela execuÃ§Ã£o da engenharia dentro do projeto.
+Antes de executar scripts, diagnostique a política efetiva:
 
-## 3. Estrutura local padrÃ£o
+```powershell
+Get-ExecutionPolicy -List
+```
 
-Em Windows, a raiz recomendada Ã©:
+Políticas restritivas podem bloquear `New-Project.ps1`. A alternativa
+temporária usada e homologada é:
 
-`C:\Dev\`
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
+```
 
-Estrutura:
+Ela vale somente para a sessão atual, não altera permanentemente a política e
+nunca deve ser aplicada automaticamente pela Foundation. `MachinePolicy` e
+`UserPolicy` corporativas devem ser respeitadas: não devem ser contornadas por
+scripts, instruções ou parâmetros alternativos.
+
+## 6. Profiles e .NET
+
+.NET não é requisito do core nem de `New-Project.ps1`; o gerador compõe o
+profile solicitado, mas não executa restore ou build.
+
+O profile `dotnet-web` exige atualmente o SDK `10.0.401`. A fonte versionada
+da fixação é `profiles/dotnet-web/template/global.json`. Antes de usar esse
+profile, confirme a instalação:
+
+```powershell
+dotnet --list-sdks
+dotnet --version
+```
+
+Depois de gerar um projeto `dotnet-web`, valide o mínimo da stack:
+
+```powershell
+dotnet restore .\src\App\App.csproj
+dotnet build .\src\App\App.csproj --configuration Release --no-restore
+```
+
+Não há regra genérica antecipada para profiles futuros; cada profile publicado
+deve documentar seus próprios pré-requisitos e verificações.
+
+## 7. VS Code e Codex
+
+VS Code e Codex fazem parte do fluxo de engenharia da metodologia, mas não
+são requisitos técnicos para `New-Project.ps1` funcionar. Instalação,
+autenticação e atualização dessas ferramentas são passos humanos.
+
+Configurações necessárias a um projeto pertencem ao próprio repositório.
+Configurações globais do Codex exigem revisão humana e seguem o
+[Codex Standard](CODEX_STANDARD.md); a Foundation não instala extensões nem
+altera configurações globais automaticamente.
+
+## 8. Testes da própria Foundation
+
+A suíte atual `tests/New-Project.Tests.ps1` foi exercitada em Windows
+PowerShell 5.1 com Pester `3.4.0`. Pester não é pré-requisito para pessoas que
+apenas usam o gerador.
+
+Para mantenedores da Foundation, o comando oficial atual é:
+
+```powershell
+Invoke-Pester -Script .\tests\New-Project.Tests.ps1
+```
+
+Execute-o em uma sessão que possa executar scripts conforme a seção 5. A suíte
+usa diretórios temporários descartáveis para seus fixtures.
+
+## 9. Segurança e privilégios
+
+O setup deve preferir o escopo da sessão ou do usuário. Nenhuma instrução da
+Foundation exige privilégios administrativos sem necessidade comprovada.
+
+A Foundation não altera silenciosamente `PATH`, Execution Policy, configuração
+Git, configuração Codex ou credenciais. Segredos, tokens, chaves privadas e
+dados de autenticação não pertencem ao repositório.
+
+## 10. Reconstrução de uma máquina Windows
+
+1. Instale manualmente Windows PowerShell/Git e as ferramentas humanas que o
+   fluxo exigir; instale o SDK somente se for usar `dotnet-web`.
+2. Clone a Foundation e selecione a referência pretendida:
+
+   ```powershell
+   git clone https://github.com/LLmach1ne/dev-foundation.git C:\Dev\00-foundation\dev-foundation
+   Set-Location C:\Dev\00-foundation\dev-foundation
+   git switch main
+   ```
+
+3. Inspecione `Get-ExecutionPolicy -List` e `git --version`. Se necessário e
+   permitido, aplique `RemoteSigned` somente ao processo atual.
+4. Para `dotnet-web`, confirme `dotnet --list-sdks` e `dotnet --version` antes
+   de gerar o projeto.
+5. Crie um `project.bootstrap.json` conforme
+   [Bootstrap Specification](BOOTSTRAP_SPEC.md), com `foundation_version`
+   exatamente igual ao conteúdo de `VERSION`.
+6. Execute o bootstrap para um diretório-pai existente:
+
+   ```powershell
+   .\tools\New-Project.ps1 -Manifest .\project.bootstrap.json -Destination C:\Dev\10-projects
+   ```
+
+7. Valide o projeto gerado. Confirme a existência de `FOUNDATION.lock` e
+   `.git`, execute `git -C <diretorio-do-projeto> status --short` e, para
+   `dotnet-web`, faça restore e build conforme a seção 6.
+
+## 11. Estrutura local recomendada
+
+Em Windows, `C:\Dev\` é uma convenção recomendada, não uma dependência do
+gerador:
 
 ```text
 C:\Dev\
-â”‚
-â”œâ”€â”€ 00-foundation\
-â”‚   â””â”€â”€ dev-foundation\
-â”‚
-â”œâ”€â”€ 10-projects\
-â”‚
-â”œâ”€â”€ 90-archive\
-â”‚
-â””â”€â”€ 99-scratch\
+├── 00-foundation\
+│   └── dev-foundation\
+├── 10-projects\
+├── 90-archive\
+└── 99-scratch\
 ```
 
-### `00-foundation`
-
-ContÃ©m a cÃ³pia local do repositÃ³rio `dev-foundation`.
-
-### `10-projects`
-
-ContÃ©m repositÃ³rios reais em desenvolvimento.
-
-Exemplo:
-
-`C:\Dev\10-projects\sicoq`
-
-### `90-archive`
-
-Pode conter cÃ³pias locais de projetos inativos ou encerrados.
-
-O Git remoto continua sendo a principal fonte versionada.
-
-### `99-scratch`
-
-Ãrea explicitamente descartÃ¡vel para:
-
-- protÃ³tipos;
-- testes;
-- investigaÃ§Ãµes;
-- experimentos.
-
-Nada importante deve permanecer apenas em `99-scratch`.
-
-## 4. Portabilidade
-
-Um ambiente Ã© considerado portÃ¡til quando um computador novo consegue ser preparado utilizando:
-
-- acesso Ã  conta ChatGPT;
-- acesso aos repositÃ³rios Git;
-- documentaÃ§Ã£o da Foundation;
-- scripts de configuraÃ§Ã£o;
-- credenciais fornecidas pelos canais apropriados.
-
-O processo nÃ£o deve depender de conhecimento informal do tipo:
-
-â€œinstale aquela extensÃ£o que usamos da outra vezâ€.
-
-Esse conhecimento deve estar documentado ou automatizado.
-
-## 5. ConfiguraÃ§Ã£o global e configuraÃ§Ã£o de projeto
-
-ConfiguraÃ§Ãµes devem existir no nÃ­vel mais especÃ­fico adequado.
-
-### Global
-
-Somente regras realmente universais.
-
-Exemplos:
-
-- comportamento geral do Codex;
-- princÃ­pios de seguranÃ§a;
-- polÃ­tica de alteraÃ§Ãµes destrutivas;
-- preferÃªncias pessoais.
-
-### Projeto
-
-Tudo que Ã© necessÃ¡rio para construir corretamente aquele repositÃ³rio.
-
-Exemplos:
-
-- extensÃµes recomendadas;
-- formatter;
-- tasks;
-- debug;
-- comandos de teste;
-- versÃ£o do SDK;
-- regras especÃ­ficas do agente.
-
-O projeto deve evitar depender de configuraÃ§Ãµes pessoais ocultas.
-
-## 6. Codex
-
-A Foundation deve manter um modelo versionado de configuraÃ§Ã£o global do Codex.
-
-A instalaÃ§Ã£o local correspondente deverÃ¡ existir em:
-
-`%USERPROFILE%\.codex\`
-
-A configuraÃ§Ã£o global deve conter somente regras aplicÃ¡veis a todos os projetos.
-
-Cada repositÃ³rio pode possuir adicionalmente:
-
-```text
-AGENTS.md
-.codex/
-```
-
-para regras especÃ­ficas.
-
-A configuraÃ§Ã£o especÃ­fica do produto nÃ£o deve ser colocada no nÃ­vel global.
-
-## 7. VS Code
-
-PreferÃªncias pessoais permanecem no perfil do usuÃ¡rio.
-
-ConfiguraÃ§Ãµes necessÃ¡rias ao projeto devem ser versionadas em:
-
-`.vscode/`
-
-Conforme a necessidade:
-
-```text
-.vscode/
-â”œâ”€â”€ settings.json
-â”œâ”€â”€ extensions.json
-â”œâ”€â”€ tasks.json
-â””â”€â”€ launch.json
-```
-
-O objetivo Ã© que abrir o repositÃ³rio jÃ¡ forneÃ§a orientaÃ§Ã£o suficiente para preparar o workspace corretamente.
-
-## 8. Git
-
-Cada produto real deve possuir seu prÃ³prio repositÃ³rio.
-
-A DEV FOUNDATION tambÃ©m possui repositÃ³rio independente.
-
-Estrutura conceitual:
-
-```text
-dev-foundation
-sicoq
-sistema-x
-sistema-y
-```
-
-Um produto nÃ£o deve ser criado como subdiretÃ³rio permanente do repositÃ³rio da Foundation.
-
-A Foundation gera projetos; nÃ£o os contÃ©m.
-
-## 9. Arquivos locais e segredos
-
-Nunca devem ser versionados inadvertidamente:
-
-- senhas;
-- tokens;
-- chaves privadas;
-- credenciais;
-- secrets de ambiente;
-- caches;
-- bancos locais descartÃ¡veis;
-- artefatos de build;
-- dados empresariais sensÃ­veis nÃ£o destinados ao repositÃ³rio.
-
-A Foundation deve fornecer padrÃµes de `.gitignore` e mecanismos apropriados para secrets de acordo com cada stack.
-
-ConfiguraÃ§Ã£o reutilizÃ¡vel e configuraÃ§Ã£o secreta devem ser tratadas como categorias diferentes.
-
-## 10. Ferramentas
-
-A Foundation deve evitar exigir ferramentas sem necessidade comprovada.
-
-O ambiente bÃ¡sico deverÃ¡ convergir para:
-
-- Git;
-- VS Code;
-- Codex;
-- PowerShell;
-- ferramentas exigidas pelo profile tecnolÃ³gico do projeto.
-
-Ferramentas adicionais somente entram quando resolvem uma necessidade real.
-
-Exemplos que nÃ£o devem ser obrigatÃ³rios por padrÃ£o:
-
-- Docker;
-- Kubernetes;
-- Node.js;
-- Python;
-- bancos locais especÃ­ficos.
-
-Cada profile tecnolÃ³gico declara suas prÃ³prias dependÃªncias.
-
-## 11. AutomaÃ§Ã£o
-
-OperaÃ§Ãµes recorrentes devem convergir para comandos previsÃ­veis.
-
-A Foundation deverÃ¡ fornecer ou exigir equivalentes a:
-
-```text
-setup
-run
-test
-verify
-```
-
-O desenvolvedor nÃ£o deve precisar memorizar uma longa sequÃªncia de comandos especÃ­ficos para cada projeto.
-
-Os scripts do projeto devem encapsular essa complexidade quando isso produzir benefÃ­cio real.
-
-## 12. Bootstrap de mÃ¡quina
-
-A Foundation deverÃ¡ evoluir para permitir um fluxo aproximado:
-
-```text
-Nova mÃ¡quina
-â†’ instalar prÃ©-requisitos mÃ­nimos
-â†’ clonar dev-foundation
-â†’ executar Setup-Machine
-â†’ verificar ambiente
-â†’ clonar ou criar projeto
-â†’ abrir no VS Code
-```
-
-O processo deverÃ¡ verificar prÃ©-requisitos antes de modificar a mÃ¡quina.
-
-AlteraÃ§Ãµes sensÃ­veis devem ser explÃ­citas.
-
-## 13. Bootstrap de projeto
-
-Um novo projeto deverÃ¡ poder nascer atravÃ©s de um comando padronizado.
-
-Conceitualmente:
-
-```text
-New-Project
-+ nome
-+ profile
-+ nÃ­vel de governanÃ§a
-```
-
-O resultado deverÃ¡ conter uma estrutura conhecida e registrar a versÃ£o da Foundation utilizada.
-
-Exemplo de metadados:
-
-```text
-foundation: dev-foundation
-version: 1.0.0
-profile: dotnet-web
-level: standard
-```
-
-## 14. RecuperaÃ§Ã£o
-
-A Foundation deve considerar como requisito a possibilidade de perda da mÃ¡quina local.
-
-O cenÃ¡rio esperado deve ser:
-
-**nova mÃ¡quina + Git remoto + ChatGPT + credenciais = ambiente reconstruÃ­vel**
-
-A perda de uma instalaÃ§Ã£o local nÃ£o deve significar perda de:
-
-- decisÃµes;
-- cÃ³digo;
-- metodologia;
-- configuraÃ§Ãµes importantes;
-- requisitos;
-- histÃ³rico.
-
-## 15. CritÃ©rio de homologaÃ§Ã£o do ambiente
-
-Antes de utilizar a Foundation no primeiro projeto real, um projeto descartÃ¡vel deverÃ¡ comprovar que:
-
-- a estrutura pode ser criada;
-- Git funciona;
-- VS Code reconhece o workspace;
-- Codex recebe as instruÃ§Ãµes esperadas;
-- scripts executam;
-- testes podem ser executados;
-- `verify` produz resultado confiÃ¡vel;
-- um commit pode ser criado;
-- o projeto pode ser removido e recriado.
-
-Somente apÃ³s essa validaÃ§Ã£o a primeira versÃ£o estÃ¡vel da Foundation deve ser declarada pronta para uso.
+`00-foundation` contém a cópia da Foundation; `10-projects` contém projetos
+reais; `90-archive` pode conter cópias locais inativas; e `99-scratch` é
+descartável. Nada importante deve permanecer apenas em `99-scratch`.
